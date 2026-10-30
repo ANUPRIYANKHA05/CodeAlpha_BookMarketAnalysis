@@ -1,0 +1,201 @@
+
+========================================================================
+0. QUESTIONS ASKED BEFORE ANALYSIS
+========================================================================
+Q1. How many books are there, and what do the variables look like?
+Q2. Is the data clean (missing values, duplicates, impossible values)?
+Q3. How are prices and ratings distributed?
+Q4. Which categories are largest, and which are the most expensive?
+Q5. Are there anomalies (unusually priced books, tiny categories)?
+Q6. H1: Do higher-priced books get higher ratings?
+Q7. H2: Does price differ across star-rating groups?
+Q8. H3: Does price differ across categories?
+Q9. H4: Are books with longer descriptions priced differently?
+
+========================================================================
+1. DATA STRUCTURE
+========================================================================
+Rows: 1000   Columns: 11
+
+Column types:
+title              str
+category           str
+price_gbp      float64
+rating           int64
+in_stock          bool
+stock_count      int64
+upc                str
+num_reviews      int64
+description        str
+product_url        str
+image_url          str
+
+First 3 rows:
+                  title            category  price_gbp  rating  in_stock  stock_count               upc  num_reviews                                                                product_url
+0  A Light in the Attic              Poetry      51.77       3      True           22  a897fe39b1053632            0  https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html
+1    Tipping the Velvet  Historical Fiction      53.74       1      True           20  90fa61229261140a            0     https://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html
+2            Soumission             Fiction      50.10       1      True           20  6957f44c3847a760            0             https://books.toscrape.com/catalogue/soumission_998/index.html
+
+========================================================================
+2. DATA QUALITY CHECKS
+========================================================================
+Missing values per column:
+title          0
+category       0
+price_gbp      0
+rating         0
+in_stock       0
+stock_count    0
+upc            0
+num_reviews    0
+description    2
+product_url    0
+image_url      0
+
+Books with an empty description: 2
+Duplicate UPC codes: 0
+Duplicate titles   : 1
+Non-positive prices: 0
+Ratings outside 1-5: 0
+Constant columns (no information): ['in_stock', 'num_reviews']
+
+Cleaned dataset: 1000 rows saved to data/books_clean.csv
+
+========================================================================
+3. DESCRIPTIVE STATISTICS
+========================================================================
+       price_gbp   rating  stock_count  num_reviews  desc_len
+count    1000.00  1000.00      1000.00       1000.0   1000.00
+mean       35.07     2.92         8.59          0.0   1431.63
+std        14.45     1.43         5.65          0.0    669.32
+min        10.00     1.00         1.00          0.0      0.00
+25%        22.11     2.00         3.00          0.0   1069.75
+50%        35.98     3.00         7.00          0.0   1348.50
+75%        47.46     4.00        14.00          0.0   1681.50
+max        59.99     5.00        22.00          0.0   8646.00
+
+Skewness of price : -0.04
+Number of categories: 50
+
+Top 10 categories by number of books:
+category
+Default           152
+Nonfiction        110
+Sequential Art     75
+Add a comment      67
+Fiction            65
+Young Adult        54
+Fantasy            48
+Romance            35
+Mystery            32
+Food and Drink     30
+
+========================================================================
+4. TRENDS AND PATTERNS
+========================================================================
+Books per star rating:
+        count  percent
+rating                
+1         226     22.6
+2         196     19.6
+3         203     20.3
+4         179     17.9
+5         196     19.6
+
+Average price by star rating:
+        count   mean  median
+rating                      
+1         226  34.56   34.77
+2         196  34.81   36.22
+3         203  34.69   33.78
+4         179  36.09   37.80
+5         196  35.37   36.90
+
+Most expensive categories (>= 10 books):
+                count   mean  median
+category                            
+Travel             11  39.79   38.95
+Fantasy            48  39.59   43.58
+History            18  37.29   41.29
+Womens Fiction     17  36.79   43.58
+Classics           19  36.55   35.01
+
+Cheapest categories (>= 10 books):
+                count   mean  median
+category                            
+Childrens          29  32.64   28.54
+Business           12  32.46   33.63
+Mystery            32  31.72   25.38
+Thriller           11  31.43   31.49
+Food and Drink     30  31.41   31.83
+
+Share of books in stock: 100.0%
+
+========================================================================
+5. ANOMALIES / OUTLIERS
+========================================================================
+IQR rule: prices outside [-15.92, 85.48] are outliers
+Price outliers found: 0
+
+5 most expensive books:
+                             title  price_gbp
+The Perfect Play (Play by Play #1)      59.99
+ Last One Home (New Beginnings #1)      59.98
+  Civilization and Its Discontents      59.95
+    The Barefoot Contessa Cookbook      59.92
+         The Diary of a Young Girl      59.90
+
+5 cheapest books:
+                                                         title  price_gbp
+                                    An Abundance of Katherines      10.00
+                                         The Origin of Species      10.01
+The Tipping Point: How Little Things Can Make a Big Difference      10.02
+                                                      Patience      10.16
+                                          Greek Mythic History      10.23
+
+Categories with fewer than 5 books: 15
+
+========================================================================
+6. HYPOTHESIS TESTS  (alpha = 0.05)
+========================================================================
+Normality check (Shapiro-Wilk on price): p = 1.975e-11
+-> Price is not normally distributed, so rank-based tests are used.
+
+H1: price and rating are related (Spearman correlation)
+    H0: no monotonic relationship
+    rho = 0.029, p = 0.356 -> Fail to reject H0 (not significant)
+
+H2: price differs across star ratings (Kruskal-Wallis)
+    H0: price distributions are the same for every rating
+    H = 1.564, p = 0.8152 -> Fail to reject H0 (not significant)
+
+H3: price differs across categories with >= 10 books (Kruskal-Wallis)
+    H0: price distributions are the same in every category
+    H = 15.061, p = 0.9189 -> Fail to reject H0 (not significant)  (25 categories tested)
+
+H4: description length and price are related (Spearman correlation)
+    H0: no monotonic relationship
+    rho = 0.061, p = 0.05366 -> Fail to reject H0 (not significant)
+
+Note: with ~1000 rows even a tiny effect can be 'significant'. Always read rho / H together with the p-value to judge practical size.
+
+========================================================================
+7. CHARTS SAVED
+========================================================================
+  images/price_distribution.png
+  images/rating_counts.png
+  images/price_by_rating.png
+  images/avg_price_by_category.png
+
+========================================================================
+8. DATA ISSUES TO ADDRESS IN FURTHER ANALYSIS
+========================================================================
+1. 2 missing values in total
+2. 2 books have no description
+3. 1 repeated titles (check if they are different editions)
+4. Constant columns carry no information: ['in_stock', 'num_reviews']
+5. 15 categories have fewer than 5 books (unreliable averages)
+General notes:
+- Prices are in GBP and excl. tax; stock_count only reflects the snapshot day.
+- Ratings are discrete (1-5), so use rank-based or categorical methods.
+- This is a practice website, so results describe this dataset, not the real book market.
