@@ -34,3 +34,19 @@ Price is not normally distributed (Shapiro-Wilk p < 0.001), so rank-based tests 
 4. 15 categories have fewer than 5 books, so their averages are unreliable.
 5. "Default" and "Add a comment" are not real genres and should be excluded from category comparisons.
 6. This is a practice website, so the results describe this dataset, not the real book market.
+
+
+## Task 3: Data Visualization
+
+![Dashboard](images/dashboard.png)
+
+### The story
+**Question:** what drives the price of a book in this catalogue?
+
+**Finding:** nothing we measured. Prices spread evenly from £10 to £60, and they do not change meaningfully with star rating, genre or description length. Ratings are also balanced, with each star level holding 18% to 23% of books. The Task 2 tests back this up (all p-values above 0.05).
+
+**What this means for decisions:** on this dataset, rating or genre cannot be used to predict price, so pricing looks arbitrary. A real retailer would want to add other drivers, such as publisher, publication date or sales volume, before building a pricing model.
+
+**Caveat:** books.toscrape.com is a practice website, so these results describe this dataset, not the real book market.
+
+Individual charts are in `images/viz/`.
