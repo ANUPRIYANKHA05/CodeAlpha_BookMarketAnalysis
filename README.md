@@ -1,5 +1,26 @@
 # CodeAlpha_BookMarketAnalysis
 
+## Task 1: Web Scraping
+
+Scraped the full catalogue of [books.toscrape.com](https://books.toscrape.com), a public site built for practising scraping, using **Requests** and **BeautifulSoup** (`scraper.py`).
+
+### What it does
+- Follows pagination across all 50 listing pages
+- Opens every book's detail page to collect fields that are not on the listing
+- Reads the star rating from the CSS class, and the price, stock and UPC from the product table
+- Retries failed requests and pauses between calls to be polite to the server
+- Saves a dataset of **1,000 books** to `data/books_raw.csv`
+
+### Dataset columns
+`title, category, price_gbp, rating, in_stock, stock_count, upc, num_reviews, description, product_url, image_url`
+
+### Run it
+```bash
+pip install requests beautifulsoup4
+python scraper.py              # full crawl (~1000 books)
+python scraper.py --limit 20   # quick test
+```
+
 ## Task 2: Exploratory Data Analysis
 
 **Dataset:** 1,000 books, 50 categories, scraped from books.toscrape.com. Full output is in `eda_report.txt`, charts are in `images/`, and the cleaned data is in `data/books_clean.csv`.
